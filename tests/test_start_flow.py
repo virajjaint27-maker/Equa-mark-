@@ -1,4 +1,4 @@
-"""Tests for the /start message sequence: banner image -> text -> compass."""
+"""Tests for the /start message sequence: banner image -> text -> sign-off."""
 import asyncio
 import os
 import sys
@@ -60,15 +60,15 @@ class TestStartSequence(unittest.TestCase):
         self.assertIn(uifont.stylize("AquaMark"), args[0])
         self.assertEqual(kw.get("parse_mode"), "HTML")
 
-        # the final message is the compass emoji alone — nothing else
+        # the final message is the sign-off emoji alone — nothing else
         method, args, kw = self.msg.calls[2]
-        self.assertEqual(args[0], "🧭")
-        self.assertEqual(args[0], start.COMPASS_SIGNOFF)
+        self.assertEqual(args[0], "😎")
+        self.assertEqual(args[0], start.SIGNOFF_EMOJI)
 
-    def test_compass_is_exactly_one_grapheme(self):
-        # 🧭 is a single code point (U+1F9ED) with no extra whitespace
-        self.assertEqual(start.COMPASS_SIGNOFF, "\U0001F9ED")
-        self.assertEqual(len(start.COMPASS_SIGNOFF), 1)
+    def test_signoff_is_exactly_one_grapheme(self):
+        # 😎 is a single code point (U+1F60E) with no extra whitespace
+        self.assertEqual(start.SIGNOFF_EMOJI, "\U0001F60E")
+        self.assertEqual(len(start.SIGNOFF_EMOJI), 1)
 
 
 if __name__ == "__main__":

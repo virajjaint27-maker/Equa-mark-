@@ -122,9 +122,9 @@ FEATURES = [
 ]
 
 
-# standalone sign-off sent right after the welcome text — the compass
-# emoji alone, nothing else in the message (owner's request)
-COMPASS_SIGNOFF = "🧭"
+# standalone sign-off sent right after the welcome text — a single
+# emoji, nothing else in the message (owner's request)
+SIGNOFF_EMOJI = "😎"
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -136,11 +136,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                           config.WELCOME_CAPTION)
     await H.reply(update.message, WELCOME % anim_count(),
               parse_mode="HTML")
-    # finally: the compass emoji as its own message
+    # finally: the sign-off emoji as its own message
     try:
-        await H.reply(update.message, COMPASS_SIGNOFF)
+        await H.reply(update.message, SIGNOFF_EMOJI)
     except Exception:
-        log.warning("could not send compass sign-off", exc_info=True)
+        log.warning("could not send sign-off emoji", exc_info=True)
 
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
