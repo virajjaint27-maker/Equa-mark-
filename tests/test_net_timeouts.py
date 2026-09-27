@@ -50,3 +50,29 @@ class TestNetTimeouts(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTokenGuard(unittest.TestCase):
+    """The friendly placeholder/revoked-token guard in bot.py."""
+
+    def test_placeholder_rejected(self):
+        self.assertFalse(bot._token_looks_valid("PASTE-YOUR-NEW-TOKEN-HERE"))
+        self.assertFalse(
+            bot._token_looks_valid("123456789:AAF-your-bot-token-here"))
+
+    def test_empty_and_short_rejected(self):
+        self.assertFalse(bot._token_looks_valid(""))
+        self.assertFalse(bot._token_looks_valid("123456:short"))
+        self.assertFalse(bot._token_looks_valid("no-colon-at-all"))
+
+    def test_real_shape_accepted(self):
+        self.assertTrue(bot._token_looks_valid(
+            "123456789:AA" + "x" * 32))
+        self.assertTrue(bot._token_looks_valid(
+            "8974576056:AAEMPrwJlbBPnF36twuV6Voh-57J9h8oLo0"))
+
+    def test_help_message_is_friendly(self):
+        msg = bot._token_help()
+        self.assertIn("BOT_TOKEN", msg)
+        self.assertIn("@BotFather", msg)
+        self.assertNotIn("Traceback", msg)

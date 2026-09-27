@@ -190,6 +190,27 @@ def _apply_net_timeouts(builder):
     return builder
 
 
+def _token_looks_valid(token: str) -> bool:
+    """Cheap pre-flight: Telegram tokens look like `123456:AAx-yz`.
+    Catches placeholders/typos BEFORE hitting the network."""
+    import re
+    return bool(token) and bool(
+        re.fullmatch(r"\d{6,}:[A-Za-z0-9_-]{30,}", token))
+
+
+def _token_help() -> str:
+    return "=" * 60 + \
+        "\nERROR: The BOT_TOKEN in your .env is not a real token." + \
+        "\n\nIt still looks like a placeholder, or it was revoked." + \
+        "\nGet a token from @BotFather in Telegram (send /mybots," + \
+        "\npick your bot, API Token), then:" + \
+        "\n    nano .env" + \
+        "\n    BOT_TOKEN=123456789:AA_your_real_token" + \
+        "\n\nIf you revoked the old token (e.g. after a leak), use the" + \
+        "\nNEW one BotFather shows — the old one is dead forever." + \
+        "\n" + "=" * 60
+
+
 def main():
     if "--version" in sys.argv:
         print(_version())
@@ -215,6 +236,10 @@ def main():
         print("Get a token from @BotFather in Telegram (/newbot).")
         print("You can also export BOT_TOKEN as an environment variable.")
         print("=" * 60)
+        return 1
+
+    if not _token_looks_valid(config.BOT_TOKEN):
+        print(_token_help())
         return 1
 
     import db
@@ -281,8 +306,14 @@ def main():
     log.info("AquaMark %s starting (animations=%d)",
              config.VERSION, __import__("core.animations",
                                         fromlist=["count"]).count())
-    app.run_polling(drop_pending_updates=True, timeout=POLL_TIMEOUT,
-                    allowed_updates=["message", "callback_query"])
+    from telegram.error import InvalidToken
+    try:
+        app.run_polling(drop_pending_updates=True, timeout=POLL_TIMEOUT,
+                        allowed_updates=["message", "callback_query"])
+    except InvalidToken:
+        # e.g. token revoked via BotFather while the .env still has it
+        print(_token_help())
+        return 1
     return 0
 
 
