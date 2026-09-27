@@ -59,12 +59,18 @@ if curl -sf --max-time 3 "$BASE" >/dev/null 2>&1 \
   note "already running — reusing it"
 else
   if command -v docker >/dev/null 2>&1; then
-    note "Docker found — running the official server as a container"
-    run docker run -d --name telegram-bot-api --restart always \
-      -p "127.0.0.1:$PORT:8081" \
-      -v /opt/telegram-bot-api:/var/lib/telegram-bot-api \
-      aiogram/telegram-bot-api:latest \
-      --api-id "$API_ID" --api-hash "$API_HASH" --local
+    if docker ps -a --format '{{.Names}}' 2>/dev/null \
+        | grep -qx telegram-bot-api; then
+      note "Docker container exists — starting it"
+      run docker start telegram-bot-api
+    else
+      note "Docker found — running the official server as a container"
+      run docker run -d --name telegram-bot-api --restart always \
+        -p "127.0.0.1:$PORT:8081" \
+        -v /opt/telegram-bot-api:/var/lib/telegram-bot-api \
+        aiogram/telegram-bot-api:latest \
+        --api-id "$API_ID" --api-hash "$API_HASH" --local
+    fi
   else
     note "no Docker — building the official server from source (~10-20 min)"
     run apt-get update -y
@@ -108,10 +114,14 @@ UNIT
 fi
 
 if [ "$DRY" != 1 ]; then
-  say "Waiting for the local server to answer"
+  say "Waiting for the local server + bot login"
+  note "(after the cloud logOut below, Telegram can take ~10 minutes"
+  note " to let the bot into the local server — this may take a while)"
   ok=""
-  for _ in $(seq 1 60); do
-    if curl -sf --max-time 3 "$BASE/bot$TOKEN/getMe" >/dev/null 2>&1; then ok=1; break; fi
+  for i in $(seq 1 180); do   # up to 15 minutes
+    body="$(curl -s --max-time 3 "$BASE/bot$TOKEN/getMe" || true)"
+    if printf '%s' "$body" | grep -q '"ok"[ ]*:[ ]*true'; then ok=1; break; fi
+    if [ $((i % 24)) = 0 ]; then note "still waiting... ($((i * 5 / 60)) min)"; fi
     sleep 5
   done
   if [ -z "$ok" ]; then
@@ -120,7 +130,7 @@ if [ "$DRY" != 1 ]; then
     echo "Built:    journalctl -u telegram-bot-api -e"
     exit 1
   fi
-  note "server is up"
+  note "server is up and the bot is logged in"
 fi
 
 # ------------------------------------------------- 2. point the bot at it
@@ -141,12 +151,34 @@ run curl -fsS "https://api.telegram.org/bot$TOKEN/logOut" || true
 
 # ------------------------------------------------- 4. restart the bot
 say "Step 4/4 — restarting AquaMark"
+restarted=""
 if systemctl list-unit-files 2>/dev/null | grep -q '^aquamark'; then
-  run systemctl restart aquamark
-  note "restarted — check: journalctl -u aquamark -f"
-else
-  note "no 'aquamark' systemd unit found — restart the bot yourself:"
+  UNIT_DIR="$(systemctl show -p WorkingDirectory --value aquamark 2>/dev/null || true)"
+  if [ -n "$UNIT_DIR" ] && [ "$UNIT_DIR" != "$BOT_DIR" ]; then
+    say "WARNING — the 'aquamark' service runs from a DIFFERENT folder"
+    note "service folder : $UNIT_DIR"
+    note "this folder    : $BOT_DIR"
+    note "restarting it would NOT use the .env updated by this script!"
+    note ""
+    note "Fix (point the service at this folder):"
+    note "    cd $BOT_DIR && bash deploy/install.sh"
+    note "Then: systemctl restart aquamark"
+  else
+    run systemctl restart aquamark
+    note "restarted — check: journalctl -u aquamark -f"
+    restarted=1
+  fi
+fi
+if [ -z "$restarted" ]; then
+  note "If the bot is running in a terminal (python3 bot.py): stop it"
+  note "with Ctrl+C and start it again from THIS folder:"
   note "    cd $BOT_DIR && python3 bot.py"
+fi
+
+# ------------------------------------------------- final proof
+if [ "$DRY" != 1 ] && [ -f "$BOT_DIR/bot.py" ]; then
+  say "Final verification (bot.py --check)"
+  ( cd "$BOT_DIR" && python3 bot.py --check ) || true
 fi
 
 say "DONE — maximum file sizes enabled"

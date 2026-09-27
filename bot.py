@@ -82,6 +82,38 @@ def _preflight():
     except Exception as exc:
         bad("Custom emojis", repr(exc)[:80])
 
+    # --- file-size limits & local Bot API (self-diagnosis) ---------------
+    try:
+        import config as _cfg
+        in_mb = _cfg.MAX_IN_SIZE // 1048576
+        out_mb = _cfg.MAX_OUT_SIZE // 1048576
+        if not _cfg.BOT_API_BASE:
+            ok("File limits", "%d MB in / %d MB out (cloud API — set "
+               "AQM_API_BASE for 2000 MB, see LARGE-FILES.md)"
+               % (in_mb, out_mb))
+        else:
+            import json as _json
+            import urllib.request as _ur
+            base = _cfg.BOT_API_BASE
+            url = "%s/bot%s/getMe" % (base, _cfg.BOT_TOKEN)
+            try:
+                with _ur.urlopen(url, timeout=8) as _r:
+                    _data = _json.loads(_r.read().decode("utf-8",
+                                                         "replace"))
+                if _data.get("ok"):
+                    ok("Local Bot API", "%s — answering" % base)
+                else:
+                    bad("Local Bot API", "%s — server up, bot rejected "
+                        "(wrong api-id/api-hash or logOut not propagated "
+                        "yet; wait 10 min)" % base)
+            except Exception as _exc:
+                bad("Local Bot API", "%s — unreachable (%s)"
+                    % (base, repr(_exc)[:60]))
+            ok("File limits", "%d MB in / %d MB out (maximum mode)"
+               % (in_mb, out_mb))
+    except Exception as exc:
+        bad("File limits", repr(exc)[:80])
+
     try:
         import bootstrap
         ff = bootstrap.ffmpeg_path()
