@@ -1,0 +1,19 @@
+# secrets — never commit
+.env
+.env.*
+!.env.example
+
+# runtime data (auto-created at startup)
+data/
+
+# extracted ffmpeg (bin/ffmpeg.xz is the tracked one)
+bin/ffmpeg
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+
+# caches & archives
+.cache/
+*.zip

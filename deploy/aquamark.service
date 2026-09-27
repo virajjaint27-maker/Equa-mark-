@@ -1,0 +1,18 @@
+[Unit]
+Description=AquaMark Telegram watermark bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__AQM_DIR__
+ExecStart=__PYTHON__ bot.py
+Restart=on-failure
+RestartSec=5
+# graceful stop: PTB shuts down cleanly on SIGTERM
+KillSignal=SIGTERM
+TimeoutStopSec=20
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

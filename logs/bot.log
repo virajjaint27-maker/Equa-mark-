@@ -1,0 +1,510 @@
+2026-09-26 10:45:46,992 | INFO    | aquamark | AquaMark 1.0.0 starting (animations=107)
+2026-09-26 10:45:47,991 | INFO    | aquamark | Bot @Aquamark_Robot is live!
+2026-09-26 10:45:48,146 | INFO    | telegram.ext.Application | Application started
+2026-09-26 10:46:23,126 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/home/user/aquamark-bot/vendor/httpx/_transports/default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        pool_request.request
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/connection.py", line 103, in handle_async_request
+    return await self._connection.handle_async_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/http11.py", line 136, in handle_async_request
+    raise exc
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/http11.py", line 106, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/http11.py", line 177, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpcore/_async/http11.py", line 231, in _receive_event
+    raise RemoteProtocolError(msg)
+httpcore.RemoteProtocolError: Server disconnected without sending a response.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/request/_httpxrequest.py", line 293, in do_request
+    res = await self._client.request(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/httpx/_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpx/_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/httpx/_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/httpx/_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpx/_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpx/_transports/default.py", line 393, in handle_async_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.13/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/home/user/aquamark-bot/vendor/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.RemoteProtocolError: Server disconnected without sending a response.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 334, in _request_wrapper
+    code, payload = await self.do_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_httpxrequest.py", line 317, in do_request
+    raise NetworkError(f"httpx.{err.__class__.__name__}: {err}") from err
+telegram.error.NetworkError: httpx.RemoteProtocolError: Server disconnected without sending a response.
+2026-09-27 05:20:25,122 | INFO    | aquamark | AquaMark 1.0.0 starting (animations=107)
+2026-09-27 05:20:26,202 | INFO    | aquamark | Bot @Aquamark_Robot is live!
+2026-09-27 05:20:26,349 | INFO    | telegram.ext.Application | Application started
+2026-09-27 05:20:30,963 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:20:36,283 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:20:41,607 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:20:47,941 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:20:55,758 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:21:02,847 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:21:08,534 | ERROR   | aquamark | unhandled exception
+Traceback (most recent call last):
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 115, in network_retry_loop
+    if not await do_action():
+           ^^^^^^^^^^^^^^^^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_utils/networkloop.py", line 108, in do_action
+    return action_cb_task.result()
+           ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_updater.py", line 376, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 658, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 4605, in get_updates
+    await self._post(
+    ^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    ),
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 691, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/ext/_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/_bot.py", line 720, in _do_post
+    result = await request.post(
+             ^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 202, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/user/aquamark-bot/vendor/telegram/request/_baserequest.py", line 385, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-09-27 05:21:13,718 | INFO    | telegram.ext.Application | Application is stopping. This might take a moment.
+2026-09-27 05:21:13,718 | INFO    | telegram.ext.Application | Application.stop() complete
