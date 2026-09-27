@@ -80,14 +80,19 @@ else
         https://github.com/tdlib/telegram-bot-api.git /opt/telegram-bot-api-src
     fi
     run mkdir -p /opt/telegram-bot-api-src/build /var/lib/telegram-bot-api
+    # build parallelism from RAM: tdlib compile jobs are hungry (~1 GB each)
+    JOBS=2
+    RAM_MB="$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 8)"
+    if [ "$RAM_MB" -lt 3000 ]; then JOBS=1; fi
+    note "building with -j$JOBS (${RAM_MB} MB RAM detected)"
     if [ "$DRY" = 1 ]; then
       note "[dry-run] cmake -DCMAKE_BUILD_TYPE=Release .."
-      note "[dry-run] cmake --build . --target install -j2"
+      note "[dry-run] cmake --build . --target install -j$JOBS"
     else
       (
         cd /opt/telegram-bot-api-src/build
         cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --target install -j2
+        nice cmake --build . --target install -j$JOBS
       )
     fi
     if [ "$DRY" = 1 ]; then
