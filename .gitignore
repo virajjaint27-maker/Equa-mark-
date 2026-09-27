@@ -17,3 +17,6 @@ __pycache__/
 # caches & archives
 .cache/
 *.zip
+
+# runtime logs
+logs/

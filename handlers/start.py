@@ -122,6 +122,11 @@ FEATURES = [
 ]
 
 
+# standalone sign-off sent right after the welcome text — the compass
+# emoji alone, nothing else in the message (owner's request)
+COMPASS_SIGNOFF = "🧭"
+
+
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = H.user_id_of(update)
     db.ensure_user(uid, update.effective_user.first_name,
@@ -136,6 +141,11 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             log.warning("could not send welcome banner", exc_info=True)
     await H.reply(update.message, WELCOME % anim_count(),
               parse_mode="HTML")
+    # finally: the compass emoji as its own message
+    try:
+        await H.reply(update.message, COMPASS_SIGNOFF)
+    except Exception:
+        log.warning("could not send compass sign-off", exc_info=True)
 
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):

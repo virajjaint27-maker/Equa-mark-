@@ -143,7 +143,7 @@ the bot and tap **⚙️ Settings**.
 ./run_tests.sh
 ```
 
-122 tests: unit suites (colors, fonts, text variables, settings, database,
+124 tests: unit suites (colors, fonts, text variables, settings, database,
 renderer), the PDF engine (stamp-every-page, rotation/opacity internals,
 landscape pages, encrypted-PDF rejection), the custom-emoji layer (UTF-16
 offsets, button icons, fallback ladder, architecture guards), the video/image
