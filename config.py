@@ -27,7 +27,7 @@ def _load_dotenv(path):
 
 _load_dotenv(os.path.join(ROOT, ".env"))
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 BRAND = "AquaMark"
 TAGLINE = "Professional Watermark Studio"
 

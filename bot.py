@@ -158,6 +158,38 @@ def _report(checks):
     return 0
 
 
+# --- network timeouts ---------------------------------------------------
+# Telegram holds long-polls open BY DESIGN (no updates = the server waits
+# out the whole window). If the read timeout sits at or below the poll
+# window, every quiet poll aborts with TimedOut + a full traceback in the
+# log — the classic scary-but-harmless error. The get_updates request is a
+# SEPARATE HTTP client in python-telegram-bot and must be configured on
+# its own; the regular request timeouts alone are NOT enough.
+POLL_TIMEOUT = 15  # seconds each long-poll stays open
+
+NET_TIMEOUTS = {
+    # regular API calls (sending messages, media, edits)
+    "connect_timeout": 30,
+    "read_timeout": 60,
+    "write_timeout": 240,
+    "pool_timeout": 30,
+    "media_write_timeout": 300,          # ~50 MB uploads on slow uplinks
+    # the long-poll get_updates request
+    "get_updates_connect_timeout": 30,
+    "get_updates_read_timeout": POLL_TIMEOUT + 45,   # poll + wide slack
+    "get_updates_write_timeout": 15,
+    "get_updates_pool_timeout": 30,
+}
+
+
+def _apply_net_timeouts(builder):
+    """Apply NET_TIMEOUTS to an ApplicationBuilder (each method returns
+    the builder, so a simple chain-in-a-loop works)."""
+    for name, value in NET_TIMEOUTS.items():
+        builder = getattr(builder, name)(value)
+    return builder
+
+
 def main():
     if "--version" in sys.argv:
         print(_version())
@@ -199,12 +231,8 @@ def main():
     from handlers import admin, anim_ui, pipeline, profiles, start, \
         settings_ui, tools
 
-    builder = (ApplicationBuilder()
-               .token(config.BOT_TOKEN)
-               .connect_timeout(30)
-               .read_timeout(60)
-               .write_timeout(240)
-               .pool_timeout(30))
+    builder = _apply_net_timeouts(
+        ApplicationBuilder().token(config.BOT_TOKEN))
     if config.BOT_API_BASE:  # optional local Bot API server (LARGE-FILES.md)
         base = config.BOT_API_BASE
         builder = (builder
@@ -230,6 +258,13 @@ def main():
 
     async def _error_handler(update: object,
                              context: ContextTypes.DEFAULT_TYPE):
+        from telegram.error import NetworkError
+        if isinstance(context.error, NetworkError):
+            # TimedOut / connection reset etc. — the updater retries
+            # polling on its own; one calm line is all this needs
+            log.warning("transient network error (auto-retried): %s",
+                        context.error)
+            return
         log.error("unhandled exception", exc_info=context.error)
         try:
             if isinstance(update, Update) and update.effective_message:
@@ -246,7 +281,7 @@ def main():
     log.info("AquaMark %s starting (animations=%d)",
              config.VERSION, __import__("core.animations",
                                         fromlist=["count"]).count())
-    app.run_polling(drop_pending_updates=True,
+    app.run_polling(drop_pending_updates=True, timeout=POLL_TIMEOUT,
                     allowed_updates=["message", "callback_query"])
     return 0
 
