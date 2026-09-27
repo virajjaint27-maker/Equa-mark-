@@ -19,7 +19,18 @@ development tools" — AquaMark's `.env` already has a place for them.
 
 ---
 
-## Setup (Linux server, ~5 minutes)
+## Setup (Linux server)
+
+**Quickest way** — one command does everything below (installs the
+server via Docker or source, updates `.env`, runs the one-time cloud
+logOut, restarts the bot):
+
+```bash
+bash deploy/enable-large-files.sh          # DRY_RUN=1 ... to preview
+```
+
+It reads `BOT_TOKEN`, `API_ID` and `API_HASH` from your `.env`.
+Prefer doing it by hand? Continue below.
 
 ### 1. Run the local Bot API server
 
