@@ -334,7 +334,7 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if parts[1] == "clr":
         H.set_await(context, "color", {"param": parts[2]})
-        await query.message.reply_text(
+        await H.reply(query.message, 
             "🎨 Send me the new color for <b>%s</b>:\n"
             "<code>#FF6600</code> · <code>rgb(30,144,255)</code> · "
             "<code>gold</code> — or /cancel" % PARAMS[parts[2]][0],
@@ -351,7 +351,7 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if parts[1] == "txt":
         param = parts[2]
         H.set_await(context, "value", {"param": param})
-        await query.message.reply_text(
+        await H.reply(query.message, 
             "✏️ Send me the new value for <b>%s</b> — or /cancel" %
             PARAMS[param][0], parse_mode="HTML")
         return
@@ -379,7 +379,7 @@ async def handle_await(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s = H.settings_of(context, uid)
     raw = (msg.text or "").strip()
     if raw.lower() in ("/cancel", "cancel"):
-        await msg.reply_text("👌 Cancelled.")
+        await H.reply(msg, "👌 Cancelled.")
         return True
 
     kind = state.get("kind")
@@ -395,11 +395,12 @@ async def handle_await(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 s[param] = colors.to_hex(c)
         except colors.ColorError as exc:
             H.set_await(context, kind, state["extra"])  # keep waiting
-            await msg.reply_text("❌ %s\nTry again or send /cancel." % exc)
+            await H.reply(msg, "❌ %s\nTry again or send /cancel." % exc)
             return True
         s = H.save_settings(context, uid, s)
-        await msg.reply_photo(
-            photo=__import__("io").BytesIO(
+        from core import cemoji
+        await cemoji.reply_photo(
+            msg, __import__("io").BytesIO(
                 __import__("core.renderer", fromlist=["swatch"]).swatch(
                     colors.parse_color(s[param]), s[param]).tobytes()
             ) if False else _swatch_bytes(colors.parse_color(s[param]),
@@ -420,13 +421,13 @@ async def handle_await(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 v = float(raw.replace(",", "."))
             except ValueError:
                 H.set_await(context, kind, state["extra"])
-                await msg.reply_text("❌ That's not a number. Try again or "
+                await H.reply(msg, "❌ That's not a number. Try again or "
                                      "/cancel")
                 return True
             s[param] = max(meta["min"], min(meta["max"], v))
         s = H.save_settings(context, uid, s)
         text, markup = param_panel(param, s)
-        await msg.reply_text("✅ Updated:\n\n" + text, reply_markup=markup,
+        await H.reply(msg, "✅ Updated:\n\n" + text, reply_markup=markup,
                              parse_mode="HTML")
         return True
 
@@ -437,7 +438,7 @@ async def handle_await(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if kind == "profile_name":
         import db
         db_ok = db.save_profile(uid, raw[:40], s)
-        await msg.reply_text("💾 Profile <b>%s</b> saved!" % H.esc(raw[:40])
+        await H.reply(msg, "💾 Profile <b>%s</b> saved!" % H.esc(raw[:40])
                              if db_ok else "❌ Could not save profile.",
                              parse_mode="HTML")
         return True
@@ -458,8 +459,8 @@ async def cmd_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = H.user_id_of(update)
     s = H.settings_of(context, uid)
     text, markup = main_menu(s)
-    await H.reply(update.message, text, reply_markup=markup,
-                  parse_mode="HTML")
+    await H.branded_photo(update.message, config.SETTINGS_IMG, text,
+                          reply_markup=markup, parse_mode="HTML")
 
 
 # ------------------------------------------------------------- quick cmds
@@ -504,7 +505,7 @@ async def cmd_quick(update: Update, context: ContextTypes.DEFAULT_TYPE):
             elif param == "position":
                 val = arg.lower() if arg.lower() in config.POSITIONS else None
             if val is None:
-                await update.message.reply_text(
+                await H.reply(update.message, 
                     "❌ Unknown %s “%s”. Send /%s without arguments to see "
                     "options." % (param, arg, cmd))
                 return
@@ -515,19 +516,19 @@ async def cmd_quick(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 v = float(arg.replace(",", ".").replace("x", "")
                           .replace("%", "").replace("°", ""))
             except ValueError:
-                await update.message.reply_text("❌ Send a number, e.g. "
+                await H.reply(update.message, "❌ Send a number, e.g. "
                                                 "/%s 12" % cmd)
                 return
             s[param] = max(meta["min"], min(meta["max"], v))
         s = H.save_settings(context, uid, s)
-        await update.message.reply_text(
+        await H.reply(update.message, 
             "✅ %s set to <b>%s</b>" % (PARAMS[param][0],
                                         _fmt_value(param, s)),
             parse_mode="HTML")
         return
 
     text, markup = param_panel(param, s)
-    await update.message.reply_text(text, reply_markup=markup,
+    await H.reply(update.message, text, reply_markup=markup,
                                     parse_mode="HTML")
 
 

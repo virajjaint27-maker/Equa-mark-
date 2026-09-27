@@ -132,13 +132,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db.ensure_user(uid, update.effective_user.first_name,
                    update.effective_user.username)
     # branded banner first (graceful fallback to text-only if missing)
-    if os.path.isfile(config.BRAND_IMG):
-        try:
-            with open(config.BRAND_IMG, "rb") as fh:
-                await update.message.reply_photo(
-                    photo=fh, caption=config.WELCOME_CAPTION)
-        except Exception:
-            log.warning("could not send welcome banner", exc_info=True)
+    await H.branded_photo(update.message, config.BRAND_IMG,
+                          config.WELCOME_CAPTION)
     await H.reply(update.message, WELCOME % anim_count(),
               parse_mode="HTML")
     # finally: the compass emoji as its own message
@@ -149,7 +144,8 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await H.reply(update.message, HELP % anim_count(), parse_mode="HTML")
+    await H.branded_photo(update.message, config.HELP_IMG,
+                          HELP % anim_count(), parse_mode="HTML")
 
 
 async def cmd_features(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -166,7 +162,7 @@ async def cmd_features(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cmd_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "🤖 <b>AquaMark</b> v%s\nProfessional watermark studio for "
         "Telegram.\n\n🎞 %d animations · 🎨 full design control · 🧰 media "
         "tools\n\nBuilt with python-telegram-bot + Pillow + ffmpeg. "
@@ -180,7 +176,7 @@ async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     m, s = divmod(rem, 60)
     up_str = ("%dh %02dm" % (h, m)) if h else ("%dm %02ds" % (m, s))
     g = db.global_stats()
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "🏓 Pong!\n\n⏱ Uptime: %s\n🎬 Animations: %d\n👥 Users: %d\n💧 "
         "Renders: %d" % (up_str, anim_count(), g["users"], g["processed"]))
 
@@ -188,7 +184,7 @@ async def cmd_ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = H.user_id_of(update)
     st = db.user_stats(uid)
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "📊 <b>Your stats</b>\n\n💧 Media watermarked: <b>%d</b>" %
         st["processed"], parse_mode="HTML")
 
@@ -201,7 +197,7 @@ async def cmd_wm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = " ".join(context.args or []).strip()
     if not text:
         H.set_await(context, "wm_text")
-        await update.message.reply_text(
+        await H.reply(update.message, 
             "✏️ Send me the watermark text — or /cancel\n\n💡 Multi-line is "
             "supported (send several lines), and variables like {date} "
             "{user} {count} work too.")
@@ -209,7 +205,7 @@ async def cmd_wm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s["text"] = text[:200]
     s["wm_type"] = "text"
     s = H.save_settings(context, uid, s)
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "✅ Watermark set to:\n<b>%s</b>\n\nSend me any photo or video!" %
         H.esc(s["text"]), parse_mode="HTML")
 
@@ -244,7 +240,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if s.get("wm_type") == "text" and not s.get("text"):
         s["text"] = msg.text[:200]
         s = H.save_settings(context, uid, s)
-        await msg.reply_text(
+        await H.reply(msg, 
             "✅ Watermark set to <b>%s</b>\n\nNow send me any photo or "
             "video — or fine-tune everything in /settings 🎨" %
             H.esc(s["text"]), parse_mode="HTML")
@@ -252,7 +248,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if context.user_data.get("await"):
         return
-    await msg.reply_text(
+    await H.reply(msg, 
         "🫧 I watermark media! Send me a photo or video (forwarded is "
         "fine).\n\nChange my text with /wm, or explore /settings and "
         "/animation 🎞")
@@ -267,7 +263,7 @@ async def cmd_color(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s = H.settings_of(context, uid)
     raw = " ".join(context.args or []).strip()
     if not raw:
-        await update.message.reply_text(
+        await H.reply(update.message, 
             "🎨 Usage: /color #FF6600 · /color rgb(30,144,255) · /color "
             "gold — names, hex and rgb() all work. 148 named colors!")
         return
@@ -284,15 +280,16 @@ async def cmd_color(update: Update, context: ContextTypes.DEFAULT_TYPE):
             s["color2"] = ""
             sw = renderer.swatch(c, s["color"])
     except colors.ColorError as exc:
-        await update.message.reply_text("❌ %s" % exc)
+        await H.reply(update.message, "❌ %s" % exc)
         return
     s = H.save_settings(context, uid, s)
     import io
     buf = io.BytesIO()
     sw.save(buf, format="PNG")
     buf.seek(0)
-    await update.message.reply_photo(
-        photo=buf, caption="✅ Text color updated!", parse_mode="HTML")
+    from core import cemoji
+    await cemoji.reply_photo(
+        update.message, buf, "✅ Text color updated!", parse_mode="HTML")
 
 
 async def cmd_gradient(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -306,7 +303,7 @@ async def cmd_auto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s = H.save_settings(context, uid, s)
     state_txt = "ON — I watermark media the moment you send it" \
         if s["auto_mode"] else "OFF — I'll ask before watermarking"
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "🤖 Auto-process is now <b>%s</b>" % state_txt, parse_mode="HTML")
 
 
@@ -314,7 +311,7 @@ async def cmd_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     from core.settings import DEFAULTS
     uid = H.user_id_of(update)
     H.save_settings(context, uid, dict(DEFAULTS))
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "♻️ Settings reset to defaults. Your profiles are safe.")
 
 
@@ -326,11 +323,11 @@ async def cmd_setlogo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     src_msg = msg.reply_to_message or msg
     info = __import__("core.media", fromlist=["classify"]).classify(src_msg)
     if info is None or not info.is_image_like:
-        await msg.reply_text(
+        await H.reply(msg, 
             "🖼 Reply to a PNG/image with /setlogo (or send the image with "
             "caption /setlogo). Transparent PNGs work best!")
         return
-    status = await msg.reply_text("⬇️ Saving logo…")
+    status = await H.reply(msg, "⬇️ Saving logo…")
     import tempfile, shutil
     d = tempfile.mkdtemp(prefix="logo_", dir=config.TMP_DIR)
     try:
@@ -353,7 +350,7 @@ async def cmd_setlogo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         s = H.settings_of(context, uid)
         s["wm_type"] = "logo"
         H.save_settings(context, uid, s)
-        await status.edit_text(
+        await H.edit_msg(status, 
             "✅ Logo saved and logo-mode enabled! Send any media to stamp "
             "it. (Size/opacity/position still apply — /settings)")
     finally:
@@ -371,7 +368,7 @@ async def cmd_clearlogo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s = H.settings_of(context, uid)
     s["wm_type"] = "text"
     H.save_settings(context, uid, s)
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "🗑 Logo removed — back to text watermarking." if removed else
         "You had no logo saved. Set one with /setlogo!")
 

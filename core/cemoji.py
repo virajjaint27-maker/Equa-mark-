@@ -313,6 +313,8 @@ def prepare(text: str) -> Prepared:
     """
     if not isinstance(text, str):
         text = str(text)
+    from core import uifont
+    text = uifont.stylize(text)   # UI font first; tokens/tags are protected
     if not active():
         # tokens only; HTML stays for the normal parse_mode path
         return Prepared(text=_expand_only(text), fmt_entities=None,
@@ -325,7 +327,8 @@ def expand(text: str) -> str:
 
     For captions and other places that stay on the plain-text path.
     """
-    return _decode(text, with_custom=False).text
+    from core import uifont
+    return _decode(uifont.stylize(text), with_custom=False).text
 
 
 # ---------------------------------------------------------------------------
@@ -531,3 +534,123 @@ async def edit_message(msg, text: str, **kw):
     if prepared.has_custom or icons:
         note_rejection()
     return await msg.edit_text(prepared.text, reply_markup=markup2, **rest2)
+
+
+async def reply_photo(message, photo, caption: str, **kw):
+    """message.reply_photo with the same custom-emoji/font/ladder support
+    as :func:`reply_text` (caption entities + graceful demotion)."""
+    prepared = prepare(caption)
+    markup = kw.get("reply_markup")
+    rest = {k: v for k, v in kw.items() if k != "reply_markup"}
+    icons = markup_has_icons(markup)
+
+    if not prepared.has_custom and not icons:
+        # fast path — caption as plain text / HTML parse_mode
+        return await message.reply_photo(photo, caption=prepared.text, **kw)
+
+    if prepared.has_custom:
+        entities = (prepared.fmt_entities or []) + prepared.custom_entities
+        try:
+            return await message.reply_photo(
+                photo, caption=prepared.text,
+                caption_entities=entities or None,
+                reply_markup=markup, **rest)
+        except TelegramError as exc:
+            if _benign(exc):
+                raise
+            log.info("custom-emoji photo send rejected (%s); demoting", exc)
+    elif icons and prepared.fmt_entities is None:
+        try:
+            return await message.reply_photo(
+                photo, caption=prepared.text,
+                reply_markup=markup, **rest)
+        except TelegramError as exc:
+            if _benign(exc):
+                raise
+            log.info("icon-button photo send rejected (%s); demoting", exc)
+
+    markup2 = strip_icons(markup)
+    rest2 = {k: v for k, v in rest.items() if k != "parse_mode"}
+    try:
+        if prepared.fmt_entities:
+            res = await message.reply_photo(
+                photo, caption=prepared.text,
+                caption_entities=prepared.fmt_entities,
+                reply_markup=markup2, **rest2)
+        else:
+            res = await message.reply_photo(
+                photo, caption=prepared.text,
+                reply_markup=markup2, **rest2)
+        if prepared.has_custom or icons:
+            note_rejection()
+        return res
+    except TelegramError as exc:
+        if _benign(exc):
+            raise
+        log.warning("photo send failed without custom emojis too (%s); "
+                    "trying plain caption", exc)
+
+    if prepared.has_custom or icons:
+        note_rejection()
+    return await message.reply_photo(photo, caption=prepared.text,
+                                     reply_markup=markup2, **rest2)
+
+
+async def edit_caption(msg, caption: str, **kw):
+    """msg.edit_caption with the same custom-emoji/font/ladder support as
+    :func:`edit_message` — used for live status updates on photo
+    messages."""
+    prepared = prepare(caption)
+    markup = kw.get("reply_markup")
+    rest = {k: v for k, v in kw.items() if k != "reply_markup"}
+    icons = markup_has_icons(markup)
+
+    if not prepared.has_custom and not icons:
+        return await msg.edit_caption(caption=prepared.text, **kw)
+
+    if prepared.has_custom:
+        entities = (prepared.fmt_entities or []) + prepared.custom_entities
+        try:
+            return await msg.edit_caption(
+                caption=prepared.text,
+                caption_entities=entities or None,
+                reply_markup=markup, **rest)
+        except TelegramError as exc:
+            if _benign(exc):
+                raise
+            log.info("custom-emoji caption edit rejected (%s); demoting",
+                     exc)
+    elif icons and prepared.fmt_entities is None:
+        try:
+            return await msg.edit_caption(caption=prepared.text,
+                                          reply_markup=markup, **rest)
+        except TelegramError as exc:
+            if _benign(exc):
+                raise
+            log.info("icon-button caption edit rejected (%s); demoting",
+                     exc)
+
+    markup2 = strip_icons(markup)
+    rest2 = {k: v for k, v in rest.items() if k != "parse_mode"}
+    try:
+        if prepared.fmt_entities:
+            res = await msg.edit_caption(
+                caption=prepared.text,
+                caption_entities=prepared.fmt_entities,
+                reply_markup=markup2, **rest2)
+        else:
+            res = await msg.edit_caption(caption=prepared.text,
+                                         reply_markup=markup2, **rest2)
+        if prepared.has_custom or icons:
+            note_rejection()
+        return res
+    except TelegramError as exc:
+        if _benign(exc):
+            raise
+        log.warning("caption edit failed without custom emojis too (%s); "
+                    "trying plain caption", exc)
+
+    if prepared.has_custom or icons:
+        note_rejection()
+    return await msg.edit_caption(caption=prepared.text,
+                                  reply_markup=markup2, **rest2)

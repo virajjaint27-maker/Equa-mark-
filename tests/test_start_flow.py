@@ -52,10 +52,12 @@ class TestStartSequence(unittest.TestCase):
         self.assertEqual(kinds, ["reply_photo", "reply_text", "reply_text"])
 
         method, args, kw = self.msg.calls[0]
-        self.assertEqual(kw.get("caption"), config.WELCOME_CAPTION)
+        from core import uifont
+        self.assertEqual(kw.get("caption"),
+                         uifont.stylize(config.WELCOME_CAPTION))
 
         method, args, kw = self.msg.calls[1]
-        self.assertIn("AquaMark", args[0])
+        self.assertIn(uifont.stylize("AquaMark"), args[0])
         self.assertEqual(kw.get("parse_mode"), "HTML")
 
         # the final message is the compass emoji alone — nothing else

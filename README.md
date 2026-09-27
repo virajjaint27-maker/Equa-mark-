@@ -100,6 +100,13 @@ looping MP4 (or GIF for ≤20s clips).
 `/stickerize /circle /resize /compress /convert /trim /tomp3 /speed /reverse
 /mute /ss /meta /gray /sepia /blurbg`
 
+**Branded UI:** every message and button uses a small-caps styled font
+(𝐓ʀᴀᴠᴇʟ ᴠᴏᴛᴇ style — switchable via `AQM_UI_FONT`), and the bot sends
+matching artwork at each step: welcome banner, live job status card
+(progress updates in its caption), the settings menu and /help. Commands,
+`#hex` colors, `@mentions`, URLs and non-Latin scripts stay plain so they
+remain tappable and copy-paste safe.
+
 **Workflow:** interactive settings panels, 2.6s quick previews, live progress
 bar with a cancel button, unlimited named profiles, persistent per-user
 settings, color swatch confirmations, fair-use rate limiting, personal stats.
@@ -143,7 +150,7 @@ the bot and tap **⚙️ Settings**.
 ./run_tests.sh
 ```
 
-124 tests: unit suites (colors, fonts, text variables, settings, database,
+135 tests: unit suites (colors, fonts, text variables, settings, database,
 renderer), the PDF engine (stamp-every-page, rotation/opacity internals,
 landscape pages, encrypted-PDF rejection), the custom-emoji layer (UTF-16
 offsets, button icons, fallback ladder, architecture guards), the video/image

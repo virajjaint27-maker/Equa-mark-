@@ -166,6 +166,10 @@ async def send_watermarked(message, path, media_kind, meta=None, s=None,
                            caption=None):
     """Upload a produced file with the right message type."""
     s = s or {}
+    if caption:
+        # decode [[tokens]] + apply the UI font on the plain-caption path
+        from core import cemoji
+        caption = cemoji.expand(caption)
     size = os.path.getsize(path)
     send_doc = (s.get("send_as") == "document" or
                 size > config.MAX_OUT_SIZE or media_kind == KIND_PDF or

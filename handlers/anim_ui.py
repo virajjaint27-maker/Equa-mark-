@@ -152,7 +152,7 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if parts[1] == "search":
         await H.answer_safely(query)
         H.set_await(context, "anim_search")
-        await query.message.reply_text(
+        await H.reply(query.message, 
             "🔎 Send me a search term (e.g. <code>dvd</code>, "
             "<code>glitch</code>, <code>bounce</code>) — or /cancel",
             parse_mode="HTML")
@@ -169,13 +169,13 @@ async def send_search(update: Update, context: ContextTypes.DEFAULT_TYPE,
     s = H.settings_of(context, uid)
     results = ANIM.search(query_text)[:PAGE_SIZE * 2]
     if not results:
-        await update.message.reply_text(
+        await H.reply(update.message, 
             "😐 Nothing matched “%s”. Try: bounce, slide, glitch, typewriter, "
             "orbit…" % H.esc(query_text))
         return True
     rows = [_anim_row(a, s.get("animation") == a.id) for a in results]
     rows.append([H.btn("🔙 All categories", "an:menu")])
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "🔎 Results for “%s” (%d):" % (H.esc(query_text), len(results)),
         reply_markup=H.kb(rows))
     return True
@@ -187,7 +187,7 @@ async def cmd_animation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.args:
         return await send_search(update, context, " ".join(context.args))
     text, markup = menu_keyboard(s)
-    await update.message.reply_text(text, reply_markup=markup,
+    await H.reply(update.message, text, reply_markup=markup,
                                     parse_mode="HTML")
 
 
@@ -202,7 +202,7 @@ async def send_demo(update: Update, context: ContextTypes.DEFAULT_TYPE,
     status = None
     if _demo_lock.locked():
         if query is not None:
-            await query.message.reply_text(
+            await H.reply(query.message, 
                 "🎬 One demo at a time — try again in a few seconds.")
         return
     async with _demo_lock:

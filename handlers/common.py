@@ -46,6 +46,8 @@ def btn(text, data, ce=None):
     The icon is only attached when custom emojis are enabled AND a real ID
     is configured (see core/cemoji.py). Otherwise a normal button is built.
     """
+    from core import uifont
+    text = uifont.stylize(text)
     if ce:
         from core import cemoji
         icon = cemoji.icon_id(ce)
@@ -69,16 +71,52 @@ async def reply(message, text, **kw):
     return await cemoji.reply_text(message, text, **kw)
 
 
+async def branded_photo(message, image_path, caption, **kw):
+    """Send ``image_path`` with ``caption`` (font + custom-emoji aware).
+
+    If the image is missing or Telegram rejects it, falls back to a
+    normal text message so the flow always continues.
+    """
+    import os
+    from core import cemoji
+    if image_path and os.path.isfile(image_path):
+        try:
+            with open(image_path, "rb") as fh:
+                return await cemoji.reply_photo(message, fh, caption, **kw)
+        except Exception:
+            log.warning("could not send branding image %s"
+                        % image_path, exc_info=True)
+    return await cemoji.reply_text(message, caption, **kw)
+
+
 # ------------------------------------------------------------- editing
 
+async def edit_msg(msg, text, **kw):
+    """Edit a message's text — or its caption when it carries a photo."""
+    from core import cemoji
+    if getattr(msg, "photo", None):
+        return await cemoji.edit_caption(msg, text, **kw)
+    return await cemoji.edit_message(msg, text, **kw)
+
+
 async def safe_edit(query, text=None, reply_markup=None, **kw):
-    """Custom-emoji-aware edit that never surfaces technical errors."""
+    """Custom-emoji-aware edit that never surfaces technical errors.
+
+    Smart routing: when the underlying message carries a photo (banner,
+    status or menu images) the text becomes the caption and is edited
+    via edit_caption; text messages keep the classic edit path.
+    """
     from core import cemoji
     try:
         if text is None:
             return await query.edit_message_text(
                 None, reply_markup=reply_markup, **kw)
-        return await cemoji.edit_message(query.message, text,
+        msg = query.message
+        if getattr(msg, "photo", None):
+            return await cemoji.edit_caption(msg, text,
+                                             reply_markup=reply_markup,
+                                             **kw)
+        return await cemoji.edit_message(msg, text,
                                          reply_markup=reply_markup, **kw)
     except BadRequest as exc:
         if "not modified" in str(exc).lower():

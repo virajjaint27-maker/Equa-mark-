@@ -65,10 +65,10 @@ async def run_tool(update, context, name, args, media_msg=None):
     info = M.classify(src_msg) if src_msg is not None else None
     if info is None or info.kind in (M.KIND_UNSUPPORTED, M.KIND_AUDIO) or \
             not (info.is_image_like or info.is_video_like):
-        await msg.reply_text(NEEDS_MEDIA)
+        await H.reply(msg, NEEDS_MEDIA)
         return
 
-    status = await msg.reply_text("🧰 Working…")
+    status = await H.reply(msg, "🧰 Working…")
     job_dir = tempfile.mkdtemp(prefix="tool_", dir=config.TMP_DIR)
     try:
         src = await M.download(context, info, job_dir)
@@ -82,15 +82,15 @@ async def run_tool(update, context, name, args, media_msg=None):
             return
         await _send_result(msg, out)
     except M.TooLarge as exc:
-        await msg.reply_text("📦 %s" % exc)
+        await H.reply(msg, "📦 %s" % exc)
     except FFmpegError as exc:
-        await msg.reply_text("😵 Tool failed: <code>%s</code>" %
+        await H.reply(msg, "😵 Tool failed: <code>%s</code>" %
                              H.esc(str(exc)[-200:]), parse_mode="HTML")
     except _UsageError as exc:
-        await msg.reply_text("❌ %s" % exc)
+        await H.reply(msg, "❌ %s" % exc)
     except Exception:
         log.exception("tool %s failed", name)
-        await msg.reply_text("😵 The tool hit an error — it's been logged.")
+        await H.reply(msg, "😵 The tool hit an error — it's been logged.")
     finally:
         shutil.rmtree(job_dir, ignore_errors=True)
 
@@ -356,7 +356,7 @@ async def t_meta(update, context, info, src, args, job_dir):
              if ("Stream" in ln or "Duration" in ln or "Input" in ln)]
     text = "📋 <b>Media info</b>\n<code>%s</code>" % H.esc(
         "\n".join(lines[:12]) or "no info")
-    await update.effective_message.reply_text(text, parse_mode="HTML")
+    await H.reply(update.effective_message, text, parse_mode="HTML")
     return None
 
 

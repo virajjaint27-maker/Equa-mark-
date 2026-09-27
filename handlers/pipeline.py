@@ -58,10 +58,11 @@ async def on_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if info is None:
         return
     if info.kind == M.KIND_UNSUPPORTED:
-        await msg.reply_text(M.UNSUPPORTED_TEXT)
+        await H.reply(msg, M.UNSUPPORTED_TEXT)
         return
     if info.kind == M.KIND_AUDIO:
-        await msg.reply_text(
+        await H.reply(
+            msg,
             "🎵 Audio has no pixels to watermark — but you can use "
             "/tomp3 (reply it to a video) or /meta to inspect a file.")
         return
@@ -99,7 +100,8 @@ async def _flush_group(key, context):
     uid = first.from_user.id if first.from_user else 0
     s = H.settings_of(context, uid)
     if len(state["items"]) > config.MAX_BATCH:
-        await first.reply_text(
+        await H.reply(
+            first,
             "📦 Albums are capped at %d items — processing the first %d."
             % (config.MAX_BATCH, config.MAX_BATCH))
     if s.get("auto_mode"):
@@ -208,26 +210,29 @@ async def run_job(update, context, media_items, preview=False):
     chat = update.effective_chat
 
     if uid in _user_busy:
-        await first_msg.reply_text(H.busy_note())
+        await first_H.reply(msg, H.busy_note())
         return
     _user_busy.add(uid)
     cancel_event = asyncio.Event()
     context.user_data["cancel_event"] = cancel_event
     try:
         if not db.rate_allow(uid):
-            await first_msg.reply_text(
+            await H.reply(
+                first_msg,
                 "🚦 Easy there! You've hit the hourly limit of %d renders — "
                 "try again a little later." % config.RATE_JOBS_PER_HOUR)
             return
         s = H.settings_of(context, uid)
         if s.get("wm_type") == "text" and not s.get("text"):
-            await first_msg.reply_text(
+            await H.reply(
+                first_msg,
                 "✏️ First tell me what the watermark should say — send your "
                 "text (e.g. <code>@yourbrand</code>) or use "
                 "<code>/wm your text</code>.", parse_mode="HTML")
             return
         if s.get("wm_type") == "logo" and not _logo_path(uid):
-            await first_msg.reply_text(
+            await H.reply(
+                first_msg,
                 "🖼 Logo mode is on but there's no logo yet. Send /setlogo "
                 "with a PNG, or switch to text in /settings.")
             return
@@ -246,7 +251,7 @@ async def run_job(update, context, media_items, preview=False):
                 pass
         await H.reply(first_msg, "[[stop]] Render cancelled.")
     except M.TooLarge as exc:
-        await first_msg.reply_text("📦 %s" % exc)
+        await H.reply(first_msg, "📦 %s" % exc)
     except FFmpegError as exc:
         log.error("ffmpeg error: %s", exc)
         await H.reply(first_msg,
@@ -281,14 +286,15 @@ async def _process_one(update, context, info, s, uid, user, chat, preview,
         label = "Preview" if preview else "Watermarking"
         if total > 1:
             label += " (%d/%d)" % (index + 1, total)
-        status = await msg.reply_text(
-            "[[clock]] %s…" % label, reply_markup=H.kb([[H.btn("Cancel", "cnl", ce="stop")]]))
+        cancel_kb = H.kb([[H.btn("Cancel", "cnl", ce="stop")]])
+        status = await H.branded_photo(
+            msg, config.PROCESS_IMG, "[[clock]] %s…" % label,
+            reply_markup=cancel_kb)
         context.user_data["job_status"] = status
 
         async def note(text):
             try:
-                await status.edit_text(
-                    text, reply_markup=H.kb([[H.btn("Cancel", "cnl", ce="stop")]]))
+                await H.edit_msg(status, text, reply_markup=cancel_kb)
             except Exception:
                 pass
 

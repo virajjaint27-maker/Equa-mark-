@@ -27,7 +27,7 @@ def _load_dotenv(path):
 
 _load_dotenv(os.path.join(ROOT, ".env"))
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 BRAND = "AquaMark"
 TAGLINE = "Professional Watermark Studio"
 
@@ -91,6 +91,14 @@ DB_PATH = os.path.join(DATA_DIR, "aquamark.db")
 FONT_DIR = os.path.join(ROOT, "assets", "fonts")
 LOGO_DIR = os.path.join(DATA_DIR, "logos")
 BRAND_IMG = os.path.join(ROOT, "assets", "branding", "welcome.png")
+PROCESS_IMG = os.path.join(ROOT, "assets", "branding", "process.jpg")
+SETTINGS_IMG = os.path.join(ROOT, "assets", "branding", "settings.jpg")
+HELP_IMG = os.path.join(ROOT, "assets", "branding", "help.jpg")
+
+# small-caps UI font ("Travel vote" style) on all bot text; AQM_UI_FONT=0
+# restores the plain alphabet
+USE_UI_FONT = os.environ.get(
+    "AQM_UI_FONT", "1").strip().lower() in ("1", "true", "yes", "on")
 WELCOME_CAPTION = "💧 %s — %s" % (BRAND, TAGLINE)
 for _d in (DATA_DIR, TMP_DIR, LOG_DIR, LOGO_DIR):
     os.makedirs(_d, exist_ok=True)

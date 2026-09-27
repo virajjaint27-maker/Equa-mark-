@@ -11,6 +11,7 @@ bootstrap.setup()
 
 import config
 from core import cemoji as CE
+from core import uifont
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity
 from telegram.error import TelegramError
 from handlers import common as H
@@ -42,15 +43,16 @@ class TestPrepare(CEBase):
     def test_inactive_keeps_html_and_expands_tokens(self):
         CE._tripped = True  # force inactive without touching config
         p = CE.prepare("[[water]] <b>Hi</b> [[check]]")
-        self.assertEqual(p.text, "💧 <b>Hi</b> ✅")
+        self.assertEqual(p.text, uifont.stylize("💧 <b>Hi</b> ✅"))
         self.assertIsNone(p.fmt_entities)
         self.assertFalse(p.has_custom)
 
     def test_active_offsets_are_utf16(self):
         p = CE.prepare("[[water]] <b>Aqua</b>Mark [[rocket]] [[nope]]")
-        self.assertEqual(p.text, "💧 AquaMark 🚀 [[nope]]")
+        self.assertEqual(p.text, uifont.stylize("💧 AquaMark 🚀 [[nope]]"))
         b = p.fmt_entities[0]
-        self.assertEqual((b.type, b.offset, b.length), ("bold", 3, 4))
+        self.assertEqual((b.type, b.offset, b.length),
+                     ("bold", 3, u16(uifont.stylize("Aqua"))))
         c = p.custom_entities[0]
         self.assertEqual(c.type, "custom_emoji")
         self.assertEqual(c.custom_emoji_id, "5312345678901234567")
@@ -68,7 +70,7 @@ class TestPrepare(CEBase):
 
     def test_unknown_token_left_verbatim(self):
         p = CE.prepare("[[notakey]] stays")
-        self.assertEqual(p.text, "[[notakey]] stays")
+        self.assertEqual(p.text, uifont.stylize("[[notakey]] stays"))
         self.assertFalse(p.has_custom)
 
     def test_placeholder_id_never_produces_entity(self):
@@ -92,7 +94,7 @@ class TestPrepare(CEBase):
         self.assertIn("💧", p.text)
 
     def test_expand_for_captions(self):
-        self.assertEqual(CE.expand("a [[water]] b"), "a 💧 b")
+        self.assertEqual(CE.expand("a [[water]] b"), uifont.stylize("a 💧 b"))
 
 
 class TestButtons(CEBase):
@@ -111,13 +113,13 @@ class TestButtons(CEBase):
         stripped = CE.strip_icons(H.kb([[b]]))
         self.assertFalse(CE.markup_has_icons(stripped))
         flat = stripped.inline_keyboard[0][0]
-        self.assertEqual(flat.text, "Settings")
+        self.assertEqual(flat.text, uifont.stylize("Settings"))
 
     def test_inactive_btn_prefixes_unicode_emoji(self):
         CE._tripped = True
         from handlers import common as H
         b = H.btn("Settings", "st:main", ce="water")
-        self.assertEqual(b.text, "💧 Settings")
+        self.assertEqual(b.text, uifont.stylize("💧 Settings"))
         self.assertNotIsInstance(b, CE.IconInlineButton)
 
     def test_active_btn_is_icon_button(self):
@@ -166,7 +168,7 @@ class TestFallbackLadder(CEBase):
             m, "[[water]] <b>Go</b>"))
         self.assertEqual(len(m.calls), 1)
         text, ents, icons = m.calls[0]
-        self.assertEqual(text, "💧 Go")
+        self.assertEqual(text, uifont.stylize("💧 Go"))
         self.assertEqual(len(ents), 2)  # bold + custom_emoji
 
     def test_demotes_to_formatting_only(self):
@@ -196,7 +198,7 @@ class TestFallbackLadder(CEBase):
             reply_markup=H.kb([[H.btn("Settings", "st:main", ce="water")]])))
         self.assertEqual(len(m.calls), 3)  # full -> fmt -> plain
         text, ents, icons = m.calls[-1]
-        self.assertEqual(text, "💧 Go")
+        self.assertEqual(text, uifont.stylize("💧 Go"))
         self.assertIsNone(ents)
         self.assertFalse(icons)
 
@@ -226,7 +228,7 @@ class TestFallbackLadder(CEBase):
             m, "[[water]] <b>Hi</b>", parse_mode="HTML"))
         self.assertEqual(len(m.calls), 1)
         text, ents, icons = m.calls[0]
-        self.assertEqual(text, "💧 <b>Hi</b>")  # HTML preserved verbatim
+        self.assertEqual(text, uifont.stylize("💧 <b>Hi</b>"))  # HTML kept
 
     def test_circuit_breaker_trips(self):
         CE._trip_count = CE._TRIP_AT - 1

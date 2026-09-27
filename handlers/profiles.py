@@ -38,7 +38,7 @@ def _menu(context, uid):
 async def cmd_profiles(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = H.user_id_of(update)
     text, markup = _menu(context, uid)
-    await update.message.reply_text(text, reply_markup=markup,
+    await H.reply(update.message, text, reply_markup=markup,
                                     parse_mode="HTML")
 
 
@@ -56,7 +56,7 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if parts[1] == "save":
         await H.answer_safely(query)
         H.set_await(context, "profile_name")
-        await query.message.reply_text(
+        await H.reply(query.message, 
             "💾 Send me a name for this profile (e.g. <code>insta-brand</code>"
             ") — or /cancel", parse_mode="HTML")
         return

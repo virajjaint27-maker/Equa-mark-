@@ -28,19 +28,19 @@ def _owner_check(update):
 
 async def cmd_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _owner_check(update):
-        await update.message.reply_text(
+        await H.reply(update.message, 
             "🔒 Owner only. Set OWNER_ID in .env to enable admin commands.")
         return
     msg = update.message
     src = msg.reply_to_message
     text = " ".join(context.args or [])
     if src is None and not text:
-        await msg.reply_text(
+        await H.reply(msg, 
             "📢 Usage: reply to a message with /broadcast, or "
             "/broadcast <text>")
         return
     ids = db.all_user_ids()
-    status = await msg.reply_text("📢 Broadcasting to %d users…" % len(ids))
+    status = await H.reply(msg, "📢 Broadcasting to %d users…" % len(ids))
     sent = failed = 0
     for i, uid in enumerate(ids):
         try:
@@ -56,15 +56,15 @@ async def cmd_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if i % 25 == 24:
             await asyncio.sleep(1.0)
             try:
-                await status.edit_text(
+                await H.edit_msg(status, 
                     "📢 %d/%d…" % (i + 1, len(ids)))
             except Exception:
                 pass
     try:
-        await status.edit_text("✅ Broadcast done: %d sent, %d failed." %
+        await H.edit_msg(status, "✅ Broadcast done: %d sent, %d failed." %
                                (sent, failed))
     except Exception:
-        await msg.reply_text("✅ Broadcast done: %d sent, %d failed." %
+        await H.reply(msg, "✅ Broadcast done: %d sent, %d failed." %
                              (sent, failed))
 
 
@@ -72,7 +72,7 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _owner_check(update):
         return await _personal_stats(update, context)
     g = db.global_stats()
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "📊 <b>Global stats</b>\n\n"
         "👥 Users: <b>%d</b> (%d active)\n"
         "💧 Media watermarked: <b>%d</b>\n"
@@ -85,7 +85,7 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def _personal_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = H.user_id_of(update)
     st = db.user_stats(uid)
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "📊 <b>Your stats</b>\n\n💧 Media watermarked: <b>%d</b>" %
         st["processed"], parse_mode="HTML")
 
@@ -104,7 +104,7 @@ async def cmd_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 name += " (@%s)" % r["username"]
             rows.append("%s · %d%s" % (H.esc(name), r["processed"],
                                        " · 🚫" if r["is_banned"] else ""))
-    await update.message.reply_text(
+    await H.reply(update.message, 
         "👥 <b>Top users</b>\n" + "\n".join(rows), parse_mode="HTML")
 
 
@@ -112,17 +112,17 @@ async def cmd_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _owner_check(update):
         return
     if not context.args or not context.args[0].lstrip("-").isdigit():
-        await update.message.reply_text("Usage: /ban <user_id>")
+        await H.reply(update.message, "Usage: /ban <user_id>")
         return
     db.set_banned(int(context.args[0]), True)
-    await update.message.reply_text("🚫 Banned %s" % context.args[0])
+    await H.reply(update.message, "🚫 Banned %s" % context.args[0])
 
 
 async def cmd_unban(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _owner_check(update):
         return
     if not context.args or not context.args[0].lstrip("-").isdigit():
-        await update.message.reply_text("Usage: /unban <user_id>")
+        await H.reply(update.message, "Usage: /unban <user_id>")
         return
     db.set_banned(int(context.args[0]), False)
-    await update.message.reply_text("✅ Unbanned %s" % context.args[0])
+    await H.reply(update.message, "✅ Unbanned %s" % context.args[0])
